@@ -1,0 +1,70 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="io.legere.wordlePeople.MainActivity">
+
+    <item
+        android:id="@+id/action_import_data"
+        android:orderInCategory="100"
+        android:title="@string/import_data"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_clear_all"
+        android:orderInCategory="100"
+        android:title="@string/clear_all"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_color_filter"
+        android:orderInCategory="100"
+        android:title="@string/color"
+        app:showAsAction="never" >
+
+        <menu>
+            <item android:id="@+id/action_clear_color_filter"
+                android:title="@string/clear"
+                />
+            <item android:id="@+id/action_red_color_filter"
+                android:title="@string/red"
+                android:checkable="true"
+                />
+            <item android:id="@+id/action_green_color_filter"
+                android:title="@string/green"
+                android:checkable="true"
+                />
+            <item android:id="@+id/action_blue_color_filter"
+                android:title="@string/blue"
+                android:checkable="true"
+                />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/action_gender_filter"
+        android:orderInCategory="100"
+        android:title="@string/gender"
+        app:showAsAction="never" >
+
+        <menu>
+            <item android:id="@+id/action_clear_gender_filter"
+                android:title="@string/clear"
+                />
+            <item android:id="@+id/action_north_gender_filter"
+                android:title="@string/north"
+                android:checkable="true"
+                />
+            <item android:id="@+id/action_south_gender_filter"
+                android:title="@string/south"
+                android:checkable="true"
+                />
+            <item android:id="@+id/action_east_gender_filter"
+                android:title="@string/east"
+                android:checkable="true"
+                />
+            <item android:id="@+id/action_west_gender_filter"
+                android:title="@string/west"
+                android:checkable="true"
+                />
+        </menu>
+    </item>
+</menu>

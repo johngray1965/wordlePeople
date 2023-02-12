@@ -196,3 +196,5 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+/keystore.properties
+/app/release/output-metadata.json

@@ -10,9 +10,15 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_clear_all"
+        android:id="@+id/action_clear_data"
         android:orderInCategory="100"
-        android:title="@string/clear_all"
+        android:title="@string/clear_data"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_clear_filter"
+        android:orderInCategory="100"
+        android:title="@string/clear_filter"
         app:showAsAction="never" />
 
     <item

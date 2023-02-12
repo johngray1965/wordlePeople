@@ -37,14 +37,6 @@ abstract class BaseDao<T : BaseEntity>(private val tableName: String) {
     abstract suspend fun delete(entities: List<T>): Int
 
     @RawQuery
-    protected abstract suspend fun deleteAll(query: SupportSQLiteQuery): Int
-
-    suspend fun deleteAll(): Int {
-        val query = SimpleSQLiteQuery("DELETE FROM $tableName")
-        return deleteAll(query)
-    }
-
-    @RawQuery
     protected abstract suspend fun getEntitySync(query: SupportSQLiteQuery): List<T>?
 
     suspend fun getEntitySync(id: Long): T? {

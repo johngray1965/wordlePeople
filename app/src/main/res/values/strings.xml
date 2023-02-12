@@ -1,5 +1,8 @@
 <resources>
-    <string name="app_name">WordlePeople</string>
+    <string name="app_name">Wordle People</string>
+
+    <string name="world_people_with_count">Wordle People %1$s</string>
+    <string name="world_people_with_count_of">Wordle People %1$s of %2$s</string>
 
     <string name="color">Color</string>
     <string name="trash_button">Delete</string>
@@ -12,7 +15,8 @@
     <string name="south">South</string>
     <string name="east">East</string>
     <string name="west">West</string>
-    <string name="clear_all">Clear All</string>
-    <string name="import_data">Import Data</string>
+    <string name="clear_filter">Clear Filter</string>
+    <string name="clear_data">Clear Data</string>
+    <string name="import_data">Import Data…</string>
 
 </resources>

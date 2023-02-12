@@ -13,11 +13,12 @@ import java.util.Locale
 
 class WordlePeopleAdapter(
     private val inflater: LayoutInflater,
+    private val listener: OnItemInteraction,
 ) :
     PagingDataAdapter<WordlePerson, ViewHolder>(WORLDE_PERSON_DIFFER) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        getItem(position)?.let { holder.bind(it) }
+        getItem(position)?.let { holder.bind(it, listener) }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -30,13 +31,22 @@ private val WORLDE_PERSON_DIFFER = object: DiffUtil.ItemCallback<WordlePerson>()
     override fun areItemsTheSame(oldItem: WordlePerson, newItem: WordlePerson): Boolean =
         oldItem.id == newItem.id
 
-    override fun areContentsTheSame(oldItem: WordlePerson, newItem: WordlePerson): Boolean =
-        oldItem == newItem
+    /**
+     * Important - WordlePeople are immutable.  There's no way to change one (at this time)
+     * What's important is to compare here are fields that are mutable and effect the display
+     * state (fields we display or otherwise use to change how the item is displayed)
+     *
+     * At the moment nothing is mutable, so we always return true
+     */
+    override fun areContentsTheSame(oldItem: WordlePerson, newItem: WordlePerson): Boolean {
+        return true
+    }
+
 
 }
 
 class ViewHolder(private val binding: PersonRowBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(wordlePerson: WordlePerson) {
+    fun bind(wordlePerson: WordlePerson, listener: OnItemInteraction) {
         binding.colorView.setBackgroundResource(when(wordlePerson.color) {
             Color.Blue -> R.color.blue
             Color.Green -> R.color.green
@@ -44,6 +54,9 @@ class ViewHolder(private val binding: PersonRowBinding) : RecyclerView.ViewHolde
         })
         binding.nameTextView.text = getName(wordlePerson)
         binding.genderTextView.text = wordlePerson.gender.name
+        binding.imageButton.setOnClickListener {
+            listener.onItemDelete(wordlePerson)
+        }
     }
 
     private fun getName(wordlePerson: WordlePerson) : String {
@@ -56,4 +69,8 @@ class ViewHolder(private val binding: PersonRowBinding) : RecyclerView.ViewHolde
     private fun capitalize(s: String) =
         s.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()  }
 
+}
+
+interface OnItemInteraction {
+    fun onItemDelete(wordlePerson: WordlePerson)
 }

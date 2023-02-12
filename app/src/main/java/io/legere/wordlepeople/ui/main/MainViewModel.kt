@@ -10,8 +10,10 @@ import io.legere.wordlepeople.db.WorldePeopleDb
 import io.legere.wordlepeople.db.entity.Color
 import io.legere.wordlepeople.db.entity.Gender
 import io.legere.wordlepeople.db.entity.WordlePerson
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -38,7 +40,8 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
     val wordlePeopleFlow = stateFlow.flatMapLatest {
         Pager(
             config = PagingConfig(
-                pageSize = 30,
+                pageSize = PAGE_SIZE,
+                maxSize = PAGE_SIZE * MAX_SIZE_PAGE_SIZE_MULTIPLIER
             ),
             pagingSourceFactory = {
                 when {
@@ -46,7 +49,7 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
                         wordlePeopleDao.pagingSource()
                     it.colorSet.isNotEmpty() && it.genderSet.isNotEmpty() ->
                         wordlePeopleDao.pagingSourceFilterGenderAndColor(it.genderSet.toList(), it.colorSet.toList())
-                    it.colorSet.isNotEmpty() ->
+                    it.colorSet.isNotEmpty() && it.genderSet.isEmpty() ->
                         wordlePeopleDao.pagingSourceFilterColor(it.colorSet.toList())
                     else ->
                         wordlePeopleDao.pagingSourceFilterGender(it.genderSet.toList())
@@ -56,8 +59,24 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
         ).flow
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+   val countFlow = stateFlow.flatMapLatest {
+        when {
+            it.colorSet.isEmpty() && it.genderSet.isEmpty() ->
+                wordlePeopleDao.totalCountFlow()
+            it.colorSet.isNotEmpty() && it.genderSet.isNotEmpty() ->
+                wordlePeopleDao.filterGenderAndColorCount(it.genderSet.toList(), it.colorSet.toList())
+            it.colorSet.isNotEmpty() && it.genderSet.isEmpty() ->
+                wordlePeopleDao.filterColorCount(it.colorSet.toList())
+            else ->
+                wordlePeopleDao.filterGenderCount(it.genderSet.toList())
+        }
+    }.combine(wordlePeopleDao.totalCountFlow()) { currentCount, totalCount ->
+        Pair(totalCount, currentCount)
+    }
+
     private fun updateState() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             // Need to make sure the FilterState and its members tha we send to the
             // stateFlow aren't the ones we are modifying.  Otherwise it never thinks
             // there's a chance (its copy and the one we send are one and the same).
@@ -127,7 +146,7 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
         adjustGenderFilter(checked, Gender.West)
     }
 
-    suspend fun loadData() = flow {
+    suspend fun loadData(count: Int) = flow {
 
         emit("Loading words")
 
@@ -136,7 +155,7 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
         emit("Started building the database")
         val insertList = mutableListOf<WordlePerson>()
         val nameSize = data.size
-        for (i in 1..MAX_LOAD) {
+        for (i in 1..count) {
             insertList.add(
                 buildRandomWordlePerson(nameSize, data)
             )
@@ -145,7 +164,7 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
                     insertList
                 )
                 insertList.clear()
-                emit("Imported $i of $MAX_LOAD")
+                emit("Imported $i of $count")
             }
         }
         // Add anything left after the last batch
@@ -203,9 +222,22 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
         return data
     }
 
+    fun clearData() {
+        viewModelScope.launch {
+            wordlePeopleDao.deleteAll()
+        }
+    }
+
+    fun delete(wordlePerson: WordlePerson) {
+        viewModelScope.launch {
+            wordlePeopleDao.delete(wordlePerson)
+        }
+    }
+
     companion object {
-        private const val MAX_LOAD = 100000
         private const val BATCH_SIZE = 1000
+        private const val PAGE_SIZE = 50
+        private const val MAX_SIZE_PAGE_SIZE_MULTIPLIER = 5
     }
 }
 

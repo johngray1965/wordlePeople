@@ -3,6 +3,7 @@ package io.legere.wordlepeople
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import io.legere.wordlepeople.ui.main.MainFragment
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,5 +15,7 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.container, MainFragment.newInstance())
                 .commitNow()
         }
+
+        Timber.plant(Timber.DebugTree())
     }
 }

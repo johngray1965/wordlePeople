@@ -23,7 +23,6 @@ import kotlin.random.Random
 
 @Suppress("TooManyFunctions")
 class MainViewModel(private val appContext: Application) : AndroidViewModel(appContext) {
-    private val stateFlow = MutableStateFlow(FilterState(mutableSetOf(), mutableSetOf()))
 
     private val wordlePeopleDao = WorldePeopleDb.getInstance(appContext).wordlePersonDao()
 
@@ -35,6 +34,8 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
 
     val genders: Set<Gender>
     get() = genderSet.toSet()
+
+    private val stateFlow = MutableStateFlow(FilterState(mutableSetOf(), mutableSetOf()))
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val wordlePeopleFlow = stateFlow.flatMapLatest {

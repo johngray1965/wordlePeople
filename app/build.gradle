@@ -66,10 +66,10 @@ dependencies {
     testImplementation "androidx.room:room-testing:2.5.0"
     implementation "androidx.room:room-paging:2.5.0"
 
-    implementation 'com.jakewharton.timber:timber:4.7.1'
-
     implementation "androidx.paging:paging-runtime:3.1.1"
     testImplementation "androidx.paging:paging-common:3.1.1"
+
+    implementation 'com.jakewharton.timber:timber:4.7.1'
 
     // https://mvnrepository.com/artifact/com.squareup.okio/okio
     implementation group: 'com.squareup.okio', name: 'okio', version: '3.3.0'

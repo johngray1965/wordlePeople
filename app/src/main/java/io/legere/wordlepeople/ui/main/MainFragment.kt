@@ -30,7 +30,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.math.ln
 import kotlin.math.pow
 
-class MainFragment : Fragment(), OnItemInteraction {
+class MainFragment : Fragment(), OnItemInteractionListener {
 
     companion object {
         fun newInstance() = MainFragment()

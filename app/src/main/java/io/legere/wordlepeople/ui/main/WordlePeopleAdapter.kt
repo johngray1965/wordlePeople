@@ -13,9 +13,9 @@ import java.util.Locale
 
 class WordlePeopleAdapter(
     private val inflater: LayoutInflater,
-    private val listener: OnItemInteraction,
+    private val listener: OnItemInteractionListener,
 ) :
-    PagingDataAdapter<WordlePerson, ViewHolder>(WORLDE_PERSON_DIFFER) {
+    PagingDataAdapter<WordlePerson, ViewHolder>(WORDLE_PERSON_DIFFER) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         getItem(position)?.let { holder.bind(it, listener) }
@@ -27,7 +27,7 @@ class WordlePeopleAdapter(
     }
 }
 
-private val WORLDE_PERSON_DIFFER = object: DiffUtil.ItemCallback<WordlePerson>() {
+private val WORDLE_PERSON_DIFFER = object: DiffUtil.ItemCallback<WordlePerson>() {
     override fun areItemsTheSame(oldItem: WordlePerson, newItem: WordlePerson): Boolean =
         oldItem.id == newItem.id
 
@@ -41,12 +41,10 @@ private val WORLDE_PERSON_DIFFER = object: DiffUtil.ItemCallback<WordlePerson>()
     override fun areContentsTheSame(oldItem: WordlePerson, newItem: WordlePerson): Boolean {
         return true
     }
-
-
 }
 
 class ViewHolder(private val binding: PersonRowBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(wordlePerson: WordlePerson, listener: OnItemInteraction) {
+    fun bind(wordlePerson: WordlePerson, listener: OnItemInteractionListener) {
         binding.colorView.setBackgroundResource(when(wordlePerson.color) {
             Color.Blue -> R.color.blue
             Color.Green -> R.color.green
@@ -71,6 +69,6 @@ class ViewHolder(private val binding: PersonRowBinding) : RecyclerView.ViewHolde
 
 }
 
-interface OnItemInteraction {
+interface OnItemInteractionListener {
     fun onItemDelete(wordlePerson: WordlePerson)
 }

@@ -122,14 +122,14 @@ class MainFragment : Fragment(), OnItemInteractionListener {
                     R.id.action_clear_data -> viewModel.clearData()
                     R.id.action_clear_filter -> viewModel.clearAll()
                     R.id.action_clear_color_filter -> viewModel.clearColor()
-                    R.id.action_red_color_filter ->  viewModel.setRedFilter(flip(menuItem))
-                    R.id.action_green_color_filter -> viewModel.setGreenFilter(flip(menuItem))
-                    R.id.action_blue_color_filter -> viewModel.setBlueFilter(flip(menuItem))
+                    R.id.action_red_color_filter ->  viewModel.adjustColorFilter(flip(menuItem), Color.Red)
+                    R.id.action_green_color_filter -> viewModel.adjustColorFilter(flip(menuItem), Color.Green)
+                    R.id.action_blue_color_filter -> viewModel.adjustColorFilter(flip(menuItem), Color.Blue)
                     R.id.action_clear_gender_filter ->  viewModel.clearGender()
-                    R.id.action_north_gender_filter -> viewModel.setNorthFilter(flip(menuItem))
-                    R.id.action_south_gender_filter -> viewModel.setSouthFilter(flip(menuItem))
-                    R.id.action_east_gender_filter ->  viewModel.setEastFilter(flip(menuItem))
-                    R.id.action_west_gender_filter -> viewModel.setWestFilter(flip(menuItem))
+                    R.id.action_north_gender_filter -> viewModel.adjustGenderFilter(flip(menuItem), Gender.North)
+                    R.id.action_south_gender_filter -> viewModel.adjustGenderFilter(flip(menuItem), Gender.South)
+                    R.id.action_east_gender_filter ->  viewModel.adjustGenderFilter(flip(menuItem), Gender.East)
+                    R.id.action_west_gender_filter -> viewModel.adjustGenderFilter(flip(menuItem), Gender.West)
                 }
                 return true
             }

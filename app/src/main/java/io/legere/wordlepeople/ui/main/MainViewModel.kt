@@ -2,7 +2,9 @@ package io.legere.wordlepeople.ui.main
 
 import android.app.Application
 import android.content.res.AssetManager
+import android.os.Parcelable
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -10,19 +12,22 @@ import io.legere.wordlepeople.db.WorldePeopleDb
 import io.legere.wordlepeople.db.entity.Color
 import io.legere.wordlepeople.db.entity.Gender
 import io.legere.wordlepeople.db.entity.WordlePerson
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import okio.buffer
 import okio.source
+import timber.log.Timber
 import kotlin.random.Random
 
 @Suppress("TooManyFunctions")
-class MainViewModel(private val appContext: Application) : AndroidViewModel(appContext) {
+class MainViewModel(
+    private val appContext: Application,
+    private val savedStateHandle: SavedStateHandle
+) : AndroidViewModel(appContext) {
 
     private val wordlePeopleDao = WorldePeopleDb.getInstance(appContext).wordlePersonDao()
 
@@ -35,16 +40,17 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
     val genders: Set<Gender>
     get() = genderSet.toSet()
 
-    private val stateFlow = MutableStateFlow(FilterState(mutableSetOf(), mutableSetOf()))
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    val wordlePeopleFlow = stateFlow.flatMapLatest {
+    val wordlePeopleFlow =
+        savedStateHandle.getStateFlow("filter", (FilterState(mutableSetOf(), mutableSetOf())))
+            .flatMapLatest {
         Pager(
             config = PagingConfig(
                 pageSize = PAGE_SIZE,
                 maxSize = PAGE_SIZE * MAX_SIZE_PAGE_SIZE_MULTIPLIER
             ),
             pagingSourceFactory = {
+                Timber.d("filter: $it")
                 when {
                     it.colorSet.isEmpty() && it.genderSet.isEmpty() ->
                         wordlePeopleDao.pagingSource()
@@ -61,7 +67,9 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-   val countFlow = stateFlow.flatMapLatest {
+    val countFlow =
+        savedStateHandle.getStateFlow("filter", (FilterState(mutableSetOf(), mutableSetOf())))
+            .flatMapLatest {
         when {
             it.colorSet.isEmpty() && it.genderSet.isEmpty() ->
                 wordlePeopleDao.totalCountFlow()
@@ -76,13 +84,20 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
         Pair(totalCount, currentCount)
     }
 
-    private fun updateState() {
-        viewModelScope.launch(Dispatchers.IO) {
-            // Need to make sure the FilterState and its members tha we send to the
-            // stateFlow aren't the ones we are modifying.  Otherwise it never thinks
-            // there's a chance (its copy and the one we send are one and the same).
-            stateFlow.emit(FilterState(colorSet.toMutableSet(), genderSet.toMutableSet()))
+    init {
+        if (savedStateHandle.contains("filter")) {
+            savedStateHandle.get<FilterState>("filter")?.let {
+                Timber.d("init got $it")
+                colorSet.clear()
+                colorSet.addAll(it.colorSet)
+                genderSet.clear()
+                genderSet.addAll(it.genderSet)
+            }
         }
+    }
+
+    private fun updateState() {
+        savedStateHandle["filter"] = FilterState(colorSet.toMutableSet(), genderSet.toMutableSet())
     }
 
     fun clearAll() {
@@ -96,7 +111,7 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
         updateState()
     }
 
-    private fun adjustColorFilter(checked: Boolean, color: Color) {
+    fun adjustColorFilter(checked: Boolean, color: Color) {
         if (checked) {
             colorSet.add(color)
         } else {
@@ -105,46 +120,18 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
         updateState()
     }
 
-    fun setRedFilter(checked: Boolean) {
-        adjustColorFilter(checked, Color.Red)
-    }
-
-    fun setGreenFilter(checked: Boolean) {
-        adjustColorFilter(checked, Color.Green)
-    }
-
-    fun setBlueFilter(checked: Boolean) {
-        adjustColorFilter(checked, Color.Blue)
-    }
-
     fun clearGender() {
         genderSet.clear()
         updateState()
     }
 
-    private fun adjustGenderFilter(checked: Boolean, gender: Gender) {
+    fun adjustGenderFilter(checked: Boolean, gender: Gender) {
         if (checked) {
             genderSet.add(gender)
         } else {
             genderSet.remove(gender)
         }
         updateState()
-    }
-
-    fun setNorthFilter(checked: Boolean) {
-        adjustGenderFilter(checked, Gender.North)
-    }
-
-    fun setSouthFilter(checked: Boolean) {
-        adjustGenderFilter(checked, Gender.South)
-    }
-
-    fun setEastFilter(checked: Boolean) {
-        adjustGenderFilter(checked, Gender.East)
-    }
-
-    fun setWestFilter(checked: Boolean) {
-        adjustGenderFilter(checked, Gender.West)
     }
 
     suspend fun loadData(count: Int) = flow {
@@ -241,8 +228,8 @@ class MainViewModel(private val appContext: Application) : AndroidViewModel(appC
         private const val MAX_SIZE_PAGE_SIZE_MULTIPLIER = 5
     }
 }
-
+@Parcelize
 data class FilterState(
     val colorSet: MutableSet<Color>,
     val genderSet: MutableSet<Gender>
-)
+): Parcelable
